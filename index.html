@@ -78,7 +78,7 @@
 
     /* Histórico com letra menor */
     .historico table{
-      width:140%;
+      width:120%;
       border-collapse:collapse;
       margin-top:8px;
       font-size:12px;
@@ -157,7 +157,7 @@
       <p>Lucro: <span class="valor" id="lucro"></span></p>
     </div>
 
-    <div class="resumos" id="resumos" style="display:none">
+        <div class="resumos" id="resumos" style="display:none">
       <h2>Resumo Geral</h2>
       <p>Quantidade de Viagens: <span id="totalViagens" class="valor"></span></p>
       <p>Total Bruto: <span id="totalBruto" class="valor"></span></p>
@@ -170,6 +170,7 @@
       <table id="tabelaHistorico">
         <thead>
           <tr>
+            <th>Nº</th> <!-- Nova coluna -->
             <th>Data/Hora</th>
             <th>Litro (R$)</th>
             <th>KM/L</th>
@@ -257,7 +258,7 @@
       req.onsuccess = function(){
         let totalViagens=0, totalBruto=0, totalCusto=0, totalLucro=0;
         const dados = req.result;
-        dados.forEach(d=>{
+        dados.forEach((d, index) => {
           totalViagens++;
           totalBruto += d.recebido;
           totalCusto += d.custoViagem;
@@ -269,6 +270,7 @@
 
           const tr=document.createElement("tr");
           tr.innerHTML=`
+            <td>${index + 1}</td> <!-- Número da linha -->
             <td>${d.data}</td>
             <td>${formatBRL(d.litro)}</td>
             <td>${d.kmLitro}</td>
