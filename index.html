@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cálculo de Combustível</title>
+  <style>
+    body{
+      margin:0;
+      font-family: Arial, sans-serif;
+      background:#f4f7fb;
+      display:flex;
+      justify-content:center;
+      align-items:flex-start;
+      padding:20px;
+      min-height:100vh;
+    }
+    .container{
+      background:#fff;
+      padding:20px;
+      border-radius:10px;
+      box-shadow:0 6px 18px rgba(0,0,0,0.1);
+      width:100%;
+      max-width:600px;
+    }
+    h1,h2{text-align:center;margin:0 0 15px}
+    label{display:block;font-weight:bold;margin-top:10px}
+    input,button{
+      padding:12px;
+      border:1px solid #ccc;
+      border-radius:6px;
+      font-size:18px;
+      width:100%;
+      box-sizing:border-box;
+      margin-top:5px;
+    }
+    .actions{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-top:15px;
+    }
+    button{cursor:pointer}
+    button#calcular{background:#007BFF;color:#fff;border:0}
+    button#limpar{background:#eee}
+    button#exportar{background:#28a745;color:#fff;border:0}
+    button#importar{background:#ff9800;color:#fff;border:0}
+    .resultado,.historico{margin-top:20px}
+    .resultado p{margin:8px 0;font-size:18px}
+    .valor{font-weight:bold}
+    .lucro-positivo{color:green}
+    .lucro-negativo{color:red}
+    table{width:100%;border-collapse:collapse;margin-top:10px;font-size:16px}
+    th,td{border:1px solid #ccc;padding:8px;text-align:center}
+    th{background:#f0f0f0}
+    td button{padding:4px 8px;font-size:14px;border:none;border-radius:4px;background:#dc3545;color:#fff;cursor:pointer}
+    td button:hover{background:#b52a36}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Cálculo de Combustível</h1>
+
+    <form id="formCalc" novalidate>
+      <div>
+        <label for="litro">Litro R$</label>
+        <input id="litro" type="number" step="0.01" placeholder="Ex: 3.89">
+      </div>
+      <div>
+        <label for="kmLitro">KM por litro</label>
+        <input id="kmLitro" type="number" step="0.1" placeholder="Ex: 10">
+      </div>
+      <div>
+        <label for="kmsRodados">KMs rodados</label>
+        <input id="kmsRodados" type="number" step="0.1" placeholder="Ex: 150">
+      </div>
+      <div>
+        <label for="valorRecebido">Valor recebido R$</label>
+        <input id="valorRecebido" type="number" step="0.01" placeholder="Ex: 200">
+      </div>
+      <div class="actions">
+        <button id="calcular" type="submit">Calcular</button>
+        <button id="limpar" type="button">Limpar</button>
+        <button id="exportar" type="button">Exportar JSON</button>
+        <button id="importar" type="button">Importar JSON</button>
+        <input type="file" id="fileInput" accept="application/json" style="display:none">
+      </div>
+    </form>
+
+    <div class="resultado" id="resultado" style="display:none">
+      <h2>Resultado</h2>
+      <p>Custo por Km: <span class="valor" id="custoPorKm"></span></p>
+      <p>Custo da Viagem: <span class="valor" id="custoViagem"></span></p>
+      <p>Lucro: <span class="valor" id="lucro"></span></p>
+    </div>
+
+    <div class="historico">
+      <h2>Histórico</h2>
+      <table id="tabelaHistorico">
+        <thead>
+          <tr>
+            <th>Data/Hora</th>
+            <th>Litro (R$)</th>
+            <th>KM/L</th>
+            <th>KMs</th>
+            <th>Recebido (R$)</th>
+            <th>Custo/KM</th>
+            <th>Custo Viagem</th>
+            <th>Lucro</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // IndexedDB setup
+    let db;
+    const request = indexedDB.open("CombustivelDB", 1);
+    request.onupgradeneeded = function(e){
+      db = e.target.result;
+      if(!db.objectStoreNames.contains("historico")){
+        db.createObjectStore("historico", { keyPath: "id", autoIncrement: true });
+      }
+    };
+    request.onsuccess = function(e){
+      db = e.target.result;
+      carregarHistorico();
+    };
+    request.onerror = function(){ console.error("Erro ao abrir IndexedDB"); };
+
+    const form = document.getElementById('formCalc');
+    const resultadoBox = document.getElementById('resultado');
+    const custoPorKmEl = document.getElementById('custoPorKm');
+    const custoViagemEl = document.getElementById('custoViagem');
+    const lucroEl = document.getElementById('lucro');
+    const tabelaHistorico = document.querySelector('#tabelaHistorico tbody');
+
+    function formatBRL(v){ return Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+    function toNumber(v){ return parseFloat(String(v).replace(',','.')); }
+
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      const litro = toNumber(document.getElementById('litro').value);
+      const kmLitro = toNumber(document.getElementById('kmLitro').value);
+      const kms = toNumber(document.getElementById('kmsRodados').value);
+      const recebido = toNumber(document.getElementById('valorRecebido').value);
+      if(!litro || !kmLitro || !kms || isNaN(recebido)){alert("Preencha todos os campos!");return;}
+
+      const custoKm = litro / kmLitro;
+      const custoViagem = custoKm * kms;
+      const lucro = recebido - custoViagem;
+
+      custoPorKmEl.textContent = formatBRL(custoKm.toFixed(2));
+      custoViagemEl.textContent = formatBRL(custoViagem.toFixed(2));
+      lucroEl.textContent = formatBRL(lucro.toFixed(2));
+      lucroEl.className = lucro>0 ? "valor lucro-positivo" : (lucro<0 ? "valor lucro-negativo" : "valor");
+      resultadoBox.style.display="block";
+
+      salvarHistorico({litro, kmLitro, kms, recebido, custoKm, custoViagem, lucro, data:new Date().toLocaleString()});
+    });
+
+    document.getElementById('limpar').addEventListener('click', ()=>{form.reset();resultadoBox.style.display="none";});
+
+    function salvarHistorico(obj){
+      const tx = db.transaction("historico","readwrite");
+      tx.objectStore("historico").add(obj);
+      tx.oncomplete=carregarHistorico;
+    }
+
+    function carregarHistorico(){
+      tabelaHistorico.innerHTML="";
+      const tx = db.transaction("historico","readonly");
+      const store = tx.objectStore("historico");
+      store.openCursor().onsuccess=function(e){
+        const cursor = e.target.result;
+        if(cursor){
+          const d = cursor.value;
+          const tr=document.createElement("tr");
+          tr.innerHTML=`
+            <td>${d.data}</td>
+            <td>${formatBRL(d.litro)}</td>
+            <td>${d.kmLitro}</td>
+            <td>${d.kms}</td>
+            <td>${formatBRL(d.recebido)}</td>
+            <td>${formatBRL(d.custoKm.toFixed(2))}</td>
+            <td>${formatBRL(d.custoViagem.toFixed(2))}</td>
+            <td style="color:${d.lucro>=0?'green':'red'}">${formatBRL(d.lucro.toFixed(2))}</td>
+            <td><button onclick="excluirRegistro(${d.id})">Excluir</button></td>
+          `;
+          tabelaHistorico.appendChild(tr);
+          cursor.continue();
+        }
+      };
+    }
+
+    function excluirRegistro(id){
+      const tx = db.transaction("historico","readwrite");
+      tx.objectStore("historico").delete(id);
+      tx.oncomplete=carregarHistorico;
+    }
+
+    // Exportar JSON
+    document.getElementById('exportar').addEventListener('click', ()=>{
+      const tx = db.transaction("historico","readonly");
+      const store = tx.objectStore("historico");
+      const req = store.getAll();
+      req.onsuccess=function(){
+        const dados = JSON.stringify(req.result,null,2);
+        const blob = new Blob([dados],{type:"application/json"});
+        const url = URL.createObjectURL(blob);
+        const a=document.createElement("a");
+        a.href=url;
+        a.download="historico_combustivel.json";
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    });
+
+    // Importar JSON
+    const importarBtn = document.getElementById('importar');
+    const fileInput = document.getElementById('fileInput');
+    importarBtn.addEventListener('click', ()=> fileInput.click());
+    fileInput.addEventListener('change', function(e){
+      const file = e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = function(event){
+        try{
+          const dados = JSON.parse(event.target.result);
+          if(Array.isArray(dados)){
+            const tx = db.transaction("historico","readwrite");
+            const store = tx.objectStore("historico");
+            dados.forEach(item=>{
+              delete item.id; // evitar conflitos de chave
+              store.add(item);
+            });
+            tx.oncomplete=carregarHistorico;
+          }else{
+            alert("Arquivo inválido!");
+          }
+        }catch(err){
+          alert("Erro ao importar JSON!");
+        }
+      };
+      reader.readAsText(file);
+    });
+  </script>
+</body>
+</html>
