@@ -12,49 +12,112 @@
       display:flex;
       justify-content:center;
       align-items:flex-start;
-      padding:20px;
+      padding:10px;
       min-height:100vh;
     }
+
     .container{
       background:#fff;
-      padding:20px;
+      padding:15px;
       border-radius:10px;
       box-shadow:0 6px 18px rgba(0,0,0,0.1);
       width:100%;
       max-width:600px;
+      box-sizing:border-box;
     }
-    h1,h2{text-align:center;margin:0 0 15px}
-    label{display:block;font-weight:bold;margin-top:10px}
+
+    h1,h2{
+      text-align:center;
+      margin:0 0 10px;
+      font-size:1.5rem;
+    }
+
+    label{
+      display:block;
+      font-weight:bold;
+      margin-top:8px;
+      font-size:0.9rem;
+    }
+
     input,button{
-      padding:12px;
+      padding:10px;
       border:1px solid #ccc;
       border-radius:6px;
-      font-size:18px;
+      font-size:16px;
       width:100%;
       box-sizing:border-box;
-      margin-top:5px;
+      margin-top:4px;
     }
+
     .actions{
       display:flex;
       flex-direction:column;
-      gap:10px;
-      margin-top:15px;
+      gap:8px;
+      margin-top:12px;
     }
+
     button{cursor:pointer}
+
     button#calcular{background:#007BFF;color:#fff;border:0}
     button#limpar{background:#eee}
     button#exportar{background:#28a745;color:#fff;border:0}
     button#importar{background:#ff9800;color:#fff;border:0}
-    .resultado,.historico{margin-top:20px}
-    .resultado p{margin:8px 0;font-size:18px}
+
+    .resultado,.historico,.resumos{
+      margin-top:15px;
+    }
+
+    .resultado p,.resumos p{
+      margin:6px 0;
+      font-size:16px;
+    }
+
     .valor{font-weight:bold}
     .lucro-positivo{color:green}
     .lucro-negativo{color:red}
-    table{width:100%;border-collapse:collapse;margin-top:10px;font-size:16px}
-    th,td{border:1px solid #ccc;padding:8px;text-align:center}
-    th{background:#f0f0f0}
-    td button{padding:4px 8px;font-size:14px;border:none;border-radius:4px;background:#dc3545;color:#fff;cursor:pointer}
-    td button:hover{background:#b52a36}
+
+    /* Histórico com letra menor */
+    .historico table{
+      width:120%;
+      border-collapse:collapse;
+      margin-top:8px;
+      font-size:12px;
+      word-break: break-word;
+    }
+
+    .historico th, .historico td{
+      border:1px solid #ccc;
+      padding:4px;
+      text-align:center;
+    }
+
+    .historico th{background:#f0f0f0}
+
+    .historico td button{
+      padding:2px 4px;
+      font-size:10px;
+      border:none;
+      border-radius:4px;
+      background:#dc3545;
+      color:#fff;
+      cursor:pointer;
+    }
+
+    .historico td button:hover{background:#b52a36}
+
+    /* Responsivo para telas até 600px */
+    @media (max-width:600px){
+      body{padding:5px;}
+      .container{padding:10px;}
+      h1,h2{font-size:1.3rem;}
+      label{font-size:0.85rem;}
+      input,button{font-size:14px;padding:8px;}
+      .actions{gap:6px;margin-top:10px;}
+      .resultado p,.resumos p{font-size:14px;margin:4px 0;}
+      .historico table{font-size:11px;}
+      .historico th,.historico td{padding:3px;}
+      .historico td button{font-size:9px;padding:2px 3px;}
+    }
   </style>
 </head>
 <body>
@@ -113,10 +176,18 @@
         <tbody></tbody>
       </table>
     </div>
+
+    <div class="resumos" id="resumos" style="display:none">
+      <h2>Resumo Geral</h2>
+      <p>Quantidade de Viagens: <span id="totalViagens" class="valor"></span></p>
+      <p>Total Bruto: <span id="totalBruto" class="valor"></span></p>
+      <p>Total Custo: <span id="totalCusto" class="valor"></span></p>
+      <p>Total Lucro: <span id="totalLucro" class="valor"></span></p>
+    </div>
+
   </div>
 
   <script>
-    // IndexedDB setup
     let db;
     const request = indexedDB.open("CombustivelDB", 1);
     request.onupgradeneeded = function(e){
@@ -137,6 +208,12 @@
     const custoViagemEl = document.getElementById('custoViagem');
     const lucroEl = document.getElementById('lucro');
     const tabelaHistorico = document.querySelector('#tabelaHistorico tbody');
+
+    const resumosBox = document.getElementById('resumos');
+    const totalViagensEl = document.getElementById('totalViagens');
+    const totalBrutoEl = document.getElementById('totalBruto');
+    const totalCustoEl = document.getElementById('totalCusto');
+    const totalLucroEl = document.getElementById('totalLucro');
 
     function formatBRL(v){ return Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
     function toNumber(v){ return parseFloat(String(v).replace(',','.')); }
@@ -159,7 +236,7 @@
       lucroEl.className = lucro>0 ? "valor lucro-positivo" : (lucro<0 ? "valor lucro-negativo" : "valor");
       resultadoBox.style.display="block";
 
-      salvarHistorico({litro, kmLitro, kms, recebido, custoKm, custoViagem, lucro, data:new Date().toLocaleString()});
+      salvarHistorico({litro, kmLitro, kms, recebido, custoKm: Number(custoKm.toFixed(2)), custoViagem: Number(custoViagem.toFixed(2)), lucro: Number(lucro.toFixed(2)), data:new Date().toLocaleString()});
     });
 
     document.getElementById('limpar').addEventListener('click', ()=>{form.reset();resultadoBox.style.display="none";});
@@ -174,10 +251,20 @@
       tabelaHistorico.innerHTML="";
       const tx = db.transaction("historico","readonly");
       const store = tx.objectStore("historico");
-      store.openCursor().onsuccess=function(e){
-        const cursor = e.target.result;
-        if(cursor){
-          const d = cursor.value;
+      const req = store.getAll();
+      req.onsuccess = function(){
+        let totalViagens=0, totalBruto=0, totalCusto=0, totalLucro=0;
+        const dados = req.result;
+        dados.forEach(d=>{
+          totalViagens++;
+          totalBruto += d.recebido;
+          totalCusto += d.custoViagem;
+          totalLucro += d.lucro;
+
+          const lucroFormatado = formatBRL(Number(d.lucro).toFixed(2));
+          const custoKmFormatado = formatBRL(Number(d.custoKm).toFixed(2));
+          const custoViagemFormatado = formatBRL(Number(d.custoViagem).toFixed(2));
+
           const tr=document.createElement("tr");
           tr.innerHTML=`
             <td>${d.data}</td>
@@ -185,14 +272,19 @@
             <td>${d.kmLitro}</td>
             <td>${d.kms}</td>
             <td>${formatBRL(d.recebido)}</td>
-            <td>${formatBRL(d.custoKm.toFixed(2))}</td>
-            <td>${formatBRL(d.custoViagem.toFixed(2))}</td>
-            <td style="color:${d.lucro>=0?'green':'red'}">${formatBRL(d.lucro.toFixed(2))}</td>
+            <td>${custoKmFormatado}</td>
+            <td>${custoViagemFormatado}</td>
+            <td style="color:${d.lucro>=0?'green':'red'}">${lucroFormatado}</td>
             <td><button onclick="excluirRegistro(${d.id})">Excluir</button></td>
           `;
           tabelaHistorico.appendChild(tr);
-          cursor.continue();
-        }
+        });
+
+        totalViagensEl.textContent = totalViagens;
+        totalBrutoEl.textContent = formatBRL(Number(totalBruto).toFixed(2));
+        totalCustoEl.textContent = formatBRL(Number(totalCusto).toFixed(2));
+        totalLucroEl.textContent = formatBRL(Number(totalLucro).toFixed(2));
+        resumosBox.style.display = totalViagens>0 ? "block" : "none";
       };
     }
 
@@ -234,7 +326,7 @@
             const tx = db.transaction("historico","readwrite");
             const store = tx.objectStore("historico");
             dados.forEach(item=>{
-              delete item.id; // evitar conflitos de chave
+              delete item.id;
               store.add(item);
             });
             tx.oncomplete=carregarHistorico;
