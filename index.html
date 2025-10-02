@@ -1,239 +1,381 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Cálculo de Combustível</title>
-<style>
-body {
-  margin:0;
-  font-family: Arial, sans-serif;
-  background:#f4f7fb;
-  display:flex;
-  justify-content:center;
-  align-items:flex-start;
-  padding:10px;
-  min-height:100vh;
-  flex-direction:column;
-}
-.container {
-  background:#fff;
-  padding:15px;
-  border-radius:10px;
-  box-shadow:0 6px 18px rgba(0,0,0,0.1);
-  width:100%;
-  max-width:600px;
-  box-sizing:border-box;
-  margin-bottom:20px;
-}
-h1,h2,h3 {
-  text-align:center;
-  margin:0 0 10px;
-}
-label {
-  display:block;
-  font-weight:bold;
-  margin-top:8px;
-  font-size:0.9rem;
-}
-input, button {
-  padding:10px;
-  border:1px solid #ccc;
-  border-radius:6px;
-  font-size:16px;
-  width:100%;
-  box-sizing:border-box;
-  margin-top:4px;
-}
-.actions {
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  margin-top:12px;
-}
-button {cursor:pointer}
-button#calcular {background:#007BFF;color:#fff;border:0}
-button#limpar {background:#eee}
-button#exportar {background:#28a745;color:#fff;border:0}
-button#importar {background:#ff9800;color:#fff;border:0}
-.resultado, .resumos, .historico, .historico-abastecimento {margin-top:15px;}
-.resultado p, .resumos p {margin:6px 0;font-size:16px;}
-.valor {font-weight:bold}
-.lucro-positivo {color:green}
-.lucro-negativo {color:red}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Cálculo de Combustível</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 10px;
+            min-height: 100vh;
+            flex-direction: column;
+        }
 
-/* Histórico estilo tabela */
-table {width:140%;border-collapse:collapse;margin-top:8px;font-size:12px;}
-th, td {border:1px solid #ccc;padding:4px;text-align:center;}
-th {background:#f0f0f0}
-td button {padding:2px 4px;font-size:10px;border:none;border-radius:4px;background:#dc3545;color:#fff;cursor:pointer}
-td button:hover {background:#b52a36}
+        .container {
+            background: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
 
-/* Responsivo */
-@media(max-width:600px){
-  body {padding:5px;}
-  .container {padding:10px;}
-  h1,h2,h3 {font-size:1.3rem;}
-  label {font-size:0.85rem;}
-  input, button {font-size:14px;padding:8px;}
-  .actions {gap:6px;margin-top:10px;}
-  .resultado p, .resumos p {font-size:14px;margin:4px 0;}
-  table {font-size:11px;}
-  th, td {padding:3px;}
-  td button {font-size:9px;padding:2px 3px;}
-}
-</style>
+        h1,
+        h2,
+        h3 {
+            text-align: center;
+            margin: 0 0 10px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-top: 8px;
+            font-size: 0.9rem;
+        }
+
+        input,
+        button {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: 4px;
+        }
+
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        button {
+            cursor: pointer
+        }
+
+        button#calcular {
+            background: #007BFF;
+            color: #fff;
+            border: 0
+        }
+
+        button#limpar {
+            background: #eee
+        }
+
+        button#exportar {
+            background: #28a745;
+            color: #fff;
+            border: 0
+        }
+
+        button#importar {
+            background: #ff9800;
+            color: #fff;
+            border: 0
+        }
+
+        .resultado,
+        .resumos,
+        .historico,
+        .historico-abastecimento {
+            margin-top: 15px;
+        }
+
+        .resultado p,
+        .resumos p {
+            margin: 6px 0;
+            font-size: 16px;
+        }
+
+        .valor {
+            font-weight: bold
+        }
+
+        .lucro-positivo {
+            color: green
+        }
+
+        .lucro-negativo {
+            color: red
+        }
+
+        /* Histórico estilo tabela */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+            font-size: 12px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ccc;
+            padding: 4px;
+            text-align: center;
+        }
+
+        th {
+            background: #f0f0f0
+        }
+
+        td button {
+            padding: 2px 4px;
+            font-size: 10px;
+            border: none;
+            border-radius: 4px;
+            background: #dc3545;
+            color: #fff;
+            cursor: pointer
+        }
+
+        td button:hover {
+            background: #b52a36
+        }
+
+        /* Responsivo */
+        @media(max-width:600px) {
+            body {
+                padding: 5px;
+            }
+
+            .container {
+                padding: 10px;
+            }
+
+            h1,
+            h2,
+            h3 {
+                font-size: 1.3rem;
+            }
+
+            label {
+                font-size: 0.85rem;
+            }
+
+            input,
+            button {
+                font-size: 14px;
+                padding: 8px;
+            }
+
+            .actions {
+                gap: 6px;
+                margin-top: 10px;
+            }
+
+            .resultado p,
+            .resumos p {
+                font-size: 14px;
+                margin: 4px 0;
+            }
+
+            table {
+                font-size: 11px;
+            }
+
+            th,
+            td {
+                padding: 3px;
+            }
+
+            td button {
+                font-size: 9px;
+                padding: 2px 3px;
+            }
+        }
+    </style>
 </head>
+
 <body>
 
-<!-- SEÇÃO DE VIAGENS -->
-<div class="container">
-<h1>Cálculo de Combustível UBER</h1>
-<form id="formCalc" novalidate>
-<div><label for="litro">Litro R$</label><input id="litro" type="number" step="0.01" placeholder="Ex: 3.89"></div>
-<div><label for="kmLitro">KM por litro</label><input id="kmLitro" type="number" step="0.1" placeholder="Ex: 10"></div>
-<div><label for="kmsRodados">KMs rodados</label><input id="kmsRodados" type="number" step="0.1" placeholder="Ex: 150"></div>
-<div><label for="valorRecebido">Valor recebido R$</label><input id="valorRecebido" type="number" step="0.01" placeholder="Ex: 200"></div>
-<div class="actions">
-<button id="calcular" type="submit">Calcular</button>
-<button id="limpar" type="button">Limpar</button>
-<button id="exportar" type="button">Exportar JSON</button>
-<button id="importar" type="button">Importar JSON</button>
-<input type="file" id="fileInput" accept="application/json" style="display:none">
-</div>
-</form>
+    <!-- SEÇÃO DE VIAGENS -->
+    <div class="container">
+        <h1>Cálculo de Combustível UBER</h1>
+        <form id="formCalc" novalidate>
+            <div><label for="litro">Litro R$</label><input id="litro" type="number" step="0.01" placeholder="Ex: 3.89">
+            </div>
+            <div><label for="kmLitro">KM por litro</label><input id="kmLitro" type="number" step="0.1"
+                    placeholder="Ex: 10"></div>
+            <div><label for="kmsRodados">KMs rodados</label><input id="kmsRodados" type="number" step="0.1"
+                    placeholder="Ex: 150"></div>
+            <div><label for="valorRecebido">Valor recebido R$</label><input id="valorRecebido" type="number" step="0.01"
+                    placeholder="Ex: 200"></div>
+            <div class="actions">
+                <button id="calcular" type="submit">Calcular</button>
+                <button id="limpar" type="button">Limpar</button>
+                <button id="exportar" type="button">Exportar JSON</button>
+                <button id="importar" type="button">Importar JSON</button>
+                <input type="file" id="fileInput" accept="application/json" style="display:none">
+            </div>
+        </form>
 
-<div class="resultado" id="resultado" style="display:none">
-<h2>Resultado</h2>
-<p>Custo por Km: <span class="valor" id="custoPorKm"></span></p>
-<p>Custo da Viagem: <span class="valor" id="custoViagem"></span></p>
-<p>Lucro: <span class="valor" id="lucro"></span></p>
-</div>
+        <div class="resultado" id="resultado" style="display:none">
+            <h2>Resultado</h2>
+            <p>Custo por Km: <span class="valor" id="custoPorKm"></span></p>
+            <p>Custo da Viagem: <span class="valor" id="custoViagem"></span></p>
+            <p>Lucro: <span class="valor" id="lucro"></span></p>
+        </div>
 
-<div class="resumos" id="resumos" style="display:none">
-<h2>Resumo Geral</h2>
-<p>Quantidade de Viagens: <span id="totalViagens" class="valor"></span></p>
-<p>Total Bruto: <span id="totalBruto" class="valor"></span></p>
-<p>Total Custo: <span id="totalCusto" class="valor"></span></p>
-<p>Total Lucro: <span id="totalLucro" class="valor"></span></p>
-<p>Total KMs rodados: <span id="totalKms" class="valor"></span></p>
-</div>
+        <div class="resumos" id="resumos" style="display:none">
+            <h2>Resumo Geral</h2>
+            <p>Quantidade de Viagens: <span id="totalViagens" class="valor"></span></p>
+            <p>Total Bruto: <span id="totalBruto" class="valor"></span></p>
+            <p>Total Custo: <span id="totalCusto" class="valor"></span></p>
+            <p>Total Lucro: <span id="totalLucro" class="valor"></span></p>
+            <p>Total KMs rodados: <span id="totalKms" class="valor"></span></p>
+        </div>
 
-<div class="historico">
-<h2>Histórico de Viagens</h2>
-<table id="tabelaHistorico">
-<thead>
-<tr>
-<th>Nº</th><th>Data/Hora</th><th>Litro (R$)</th><th>KM/L</th><th>KMs</th><th>Recebido (R$)</th><th>Custo/KM</th><th>Custo Viagem</th><th>Lucro</th><th>Ações</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
-</div>
-</div>
+        <div class="historico">
+            <h2>Histórico de Viagens</h2>
+            <table id="tabelaHistorico">
+                <thead>
+                    <tr>
+                        <th>Nº</th>
+                        <th>Data/Hora</th>
+                        <th>Litro (R$)</th>
+                        <th>KM/L</th>
+                        <th>KMs</th>
+                        <th>Recebido (R$)</th>
+                        <th>Custo/KM</th>
+                        <th>Custo Viagem</th>
+                        <th>Lucro</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
 
-<!-- SEÇÃO DE ABASTECIMENTO -->
-<div class="container abastecimento">
-<h2>Abastecimento</h2>
-<form id="formAbastecimento" novalidate>
-<div><label for="valorLitro">Valor Litro (R$)</label><input id="valorLitro" type="number" step="0.01" placeholder="Ex: 5.20"></div>
-<div><label for="totalAbastecido">Total (R$)</label><input id="totalAbastecido" type="number" step="0.01" placeholder="Ex: 100"></div>
-<div class="actions">
-<button id="adicionarAbastecimento" type="submit">Adicionar</button>
-<button id="limparAbastecimento" type="button">Limpar</button>
-</div>
-</form>
+    <!-- SEÇÃO DE ABASTECIMENTO -->
+    <div class="container abastecimento">
+        <h2>Abastecimento</h2>
+        <form id="formAbastecimento" novalidate>
+            <div><label for="valorLitro">Valor Litro (R$)</label><input id="valorLitro" type="number" step="0.01"
+                    placeholder="Ex: 5.20"></div>
+            <div><label for="totalAbastecido">Total (R$)</label><input id="totalAbastecido" type="number" step="0.01"
+                    placeholder="Ex: 100"></div>
+            <div class="actions">
+                <button id="adicionarAbastecimento" type="submit">Adicionar</button>
+                <button id="limparAbastecimento" type="button">Limpar</button>
+            </div>
+        </form>
 
-<div class="historico-abastecimento">
-<h3>Histórico de Abastecimentos</h3>
-<table id="tabelaAbastecimento">
-<thead>
-<tr>
-<th>Nº</th><th>Data/Hora</th><th>Valor Litro (R$)</th><th>Total Litros</th><th>Total Abastecido (R$)</th><th>Ações</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
-</div>
-</div>
+        <div class="historico-abastecimento">
+            <h3>Histórico de Abastecimentos</h3>
+            <table id="tabelaAbastecimento">
+                <thead>
+                    <tr>
+                        <th>Nº</th>
+                        <th>Data/Hora</th>
+                        <th>Valor Litro (R$)</th>
+                        <th>Total Litros</th>
+                        <th>Total Abastecido (R$)</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
 
-<script>
-let db;
-const request = indexedDB.open("CombustivelDB",2);
+            <div id="totalAbastecimentoBox" style="margin-top:12px; font-weight:bold;">
+                Total de Litros: <span id="somaLitros">0</span> L<br>
+                Total em Reais: <span id="somaReais">R$ 0,00</span><br>
+                Média por Litro: <span id="mediaLitro">R$ 0,00</span>
+            </div>
+        </div>
+    </div>
 
-request.onupgradeneeded = function(e){
-  db = e.target.result;
-  if(!db.objectStoreNames.contains("historico")) db.createObjectStore("historico",{keyPath:"id",autoIncrement:true});
-  if(!db.objectStoreNames.contains("abastecimento")) db.createObjectStore("abastecimento",{keyPath:"id",autoIncrement:true});
-};
+    <script>
+        let db;
+        const request = indexedDB.open("CombustivelDB", 2);
 
-request.onsuccess=function(e){
-  db=e.target.result;
-  carregarHistorico();
-  carregarHistoricoAbastecimento();
-};
+        request.onupgradeneeded = function (e) {
+            db = e.target.result;
+            if (!db.objectStoreNames.contains("historico")) db.createObjectStore("historico", { keyPath: "id", autoIncrement: true });
+            if (!db.objectStoreNames.contains("abastecimento")) db.createObjectStore("abastecimento", { keyPath: "id", autoIncrement: true });
+        };
 
-request.onerror=function(){console.error("Erro ao abrir IndexedDB");};
+        request.onsuccess = function (e) {
+            db = e.target.result;
+            carregarHistorico();
+            carregarHistoricoAbastecimento();
+        };
 
-const form = document.getElementById('formCalc');
-const custoPorKmEl=document.getElementById('custoPorKm');
-const custoViagemEl=document.getElementById('custoViagem');
-const lucroEl=document.getElementById('lucro');
-const resultadoBox=document.getElementById('resultado');
-const tabelaHistorico=document.querySelector('#tabelaHistorico tbody');
+        request.onerror = function () { console.error("Erro ao abrir IndexedDB"); };
 
-const resumosBox=document.getElementById('resumos');
-const totalViagensEl=document.getElementById('totalViagens');
-const totalBrutoEl=document.getElementById('totalBruto');
-const totalCustoEl=document.getElementById('totalCusto');
-const totalLucroEl=document.getElementById('totalLucro');
-const totalKmsEl=document.getElementById('totalKms');
+        const form = document.getElementById('formCalc');
+        const custoPorKmEl = document.getElementById('custoPorKm');
+        const custoViagemEl = document.getElementById('custoViagem');
+        const lucroEl = document.getElementById('lucro');
+        const resultadoBox = document.getElementById('resultado');
+        const tabelaHistorico = document.querySelector('#tabelaHistorico tbody');
 
-function formatBRL(v){return Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
-function toNumber(v){return parseFloat(String(v).replace(',','.'));}
+        const resumosBox = document.getElementById('resumos');
+        const totalViagensEl = document.getElementById('totalViagens');
+        const totalBrutoEl = document.getElementById('totalBruto');
+        const totalCustoEl = document.getElementById('totalCusto');
+        const totalLucroEl = document.getElementById('totalLucro');
+        const totalKmsEl = document.getElementById('totalKms');
 
-form.addEventListener('submit',function(e){
-  e.preventDefault();
-  const litro=toNumber(document.getElementById('litro').value);
-  const kmLitro=toNumber(document.getElementById('kmLitro').value);
-  const kms=toNumber(document.getElementById('kmsRodados').value);
-  const recebido=toNumber(document.getElementById('valorRecebido').value);
-  if(!litro||!kmLitro||!kms||isNaN(recebido)){alert("Preencha todos os campos!"); return;}
-  const custoKm=litro/kmLitro;
-  const custoViagem=custoKm*kms;
-  const lucro=recebido-custoViagem;
-  custoPorKmEl.textContent=formatBRL(custoKm.toFixed(2));
-  custoViagemEl.textContent=formatBRL(custoViagem.toFixed(2));
-  lucroEl.textContent=formatBRL(lucro.toFixed(2));
-  lucroEl.className=lucro>0?"valor lucro-positivo":(lucro<0?"valor lucro-negativo":"valor");
-  resultadoBox.style.display="block";
-  salvarHistorico({litro,kmLitro,kms,recebido,custoKm:Number(custoKm.toFixed(2)),custoViagem:Number(custoViagem.toFixed(2)),lucro:Number(lucro.toFixed(2)),data:new Date().toLocaleString()});
-});
+        function formatBRL(v) { return Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+        function toNumber(v) { return parseFloat(String(v).replace(',', '.')); }
 
-document.getElementById('limpar').addEventListener('click',()=>{form.reset();resultadoBox.style.display="none";});
+        /* VIAGENS */
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const litro = toNumber(document.getElementById('litro').value);
+            const kmLitro = toNumber(document.getElementById('kmLitro').value);
+            const kms = toNumber(document.getElementById('kmsRodados').value);
+            const recebido = toNumber(document.getElementById('valorRecebido').value);
+            if (!litro || !kmLitro || !kms || isNaN(recebido)) { alert("Preencha todos os campos!"); return; }
+            const custoKm = litro / kmLitro;
+            const custoViagem = custoKm * kms;
+            const lucro = recebido - custoViagem;
+            custoPorKmEl.textContent = formatBRL(custoKm.toFixed(2));
+            custoViagemEl.textContent = formatBRL(custoViagem.toFixed(2));
+            lucroEl.textContent = formatBRL(lucro.toFixed(2));
+            lucroEl.className = lucro > 0 ? "valor lucro-positivo" : (lucro < 0 ? "valor lucro-negativo" : "valor");
+            resultadoBox.style.display = "block";
+            salvarHistorico({ litro, kmLitro, kms, recebido, custoKm: Number(custoKm.toFixed(2)), custoViagem: Number(custoViagem.toFixed(2)), lucro: Number(lucro.toFixed(2)), data: new Date().toLocaleString() });
+        });
 
-function salvarHistorico(obj){
-  const tx=db.transaction("historico","readwrite");
-  tx.objectStore("historico").add(obj);
-  tx.oncomplete=carregarHistorico;
-}
+        document.getElementById('limpar').addEventListener('click', () => { form.reset(); resultadoBox.style.display = "none"; });
 
-function carregarHistorico(){
-  tabelaHistorico.innerHTML="";
-  const tx=db.transaction("historico","readonly");
-  const store=tx.objectStore("historico");
-  const req=store.getAll();
-  req.onsuccess=function(){
-    let totalViagens=0,totalBruto=0,totalCusto=0,totalLucro=0,totalKms=0;
-    req.result.forEach((d,index)=>{
-      totalViagens++;
-      totalBruto+=d.recebido;
-      totalCusto+=d.custoViagem;
-      totalLucro+=d.lucro;
-      totalKms+=d.kms;
-      const tr=document.createElement("tr");
-      tr.innerHTML=`
-        <td>${index+1}</td>
+        function salvarHistorico(obj) {
+            const tx = db.transaction("historico", "readwrite");
+            tx.objectStore("historico").add(obj);
+            tx.oncomplete = carregarHistorico;
+        }
+
+        function carregarHistorico() {
+            tabelaHistorico.innerHTML = "";
+            const tx = db.transaction("historico", "readonly");
+            const store = tx.objectStore("historico");
+            const req = store.getAll();
+            req.onsuccess = function () {
+                let totalViagens = 0, totalBruto = 0, totalCusto = 0, totalLucro = 0, totalKms = 0;
+                req.result.forEach((d, index) => {
+                    totalViagens++;
+                    totalBruto += d.recebido;
+                    totalCusto += d.custoViagem;
+                    totalLucro += d.lucro;
+                    totalKms += d.kms;
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+        <td>${index + 1}</td>
         <td>${d.data}</td>
         <td>${formatBRL(d.litro)}</td>
         <td>${d.kmLitro}</td>
@@ -241,124 +383,139 @@ function carregarHistorico(){
         <td>${formatBRL(d.recebido)}</td>
         <td>${formatBRL(d.custoKm.toFixed(2))}</td>
         <td>${formatBRL(d.custoViagem.toFixed(2))}</td>
-        <td style="color:${d.lucro>=0?'green':'red'}">${formatBRL(d.lucro.toFixed(2))}</td>
+        <td style="color:${d.lucro >= 0 ? 'green' : 'red'}">${formatBRL(d.lucro.toFixed(2))}</td>
         <td><button onclick="excluirHistorico(${d.id})">Excluir</button></td>
       `;
-      tabelaHistorico.appendChild(tr);
-    });
-    totalViagensEl.textContent=totalViagens;
-    totalBrutoEl.textContent=formatBRL(totalBruto.toFixed(2));
-    totalCustoEl.textContent=formatBRL(totalCusto.toFixed(2));
-    totalLucroEl.textContent=formatBRL(totalLucro.toFixed(2));
-    totalLucroEl.className=totalLucro>=0?"valor lucro-positivo":"valor lucro-negativo";
-    totalKmsEl.textContent=totalKms.toFixed(1);
-    resumosBox.style.display=totalViagens>0?"block":"none";
-  }
-}
+                    tabelaHistorico.appendChild(tr);
+                });
+                totalViagensEl.textContent = totalViagens;
+                totalBrutoEl.textContent = formatBRL(totalBruto.toFixed(2));
+                totalCustoEl.textContent = formatBRL(totalCusto.toFixed(2));
+                totalLucroEl.textContent = formatBRL(totalLucro.toFixed(2));
+                totalLucroEl.className = totalLucro >= 0 ? "valor lucro-positivo" : "valor lucro-negativo";
+                totalKmsEl.textContent = totalKms.toFixed(1);
+                resumosBox.style.display = totalViagens > 0 ? "block" : "none";
+            }
+        }
 
-function excluirHistorico(id){
-  const tx=db.transaction("historico","readwrite");
-  tx.objectStore("historico").delete(id);
-  tx.oncomplete=carregarHistorico;
-}
+        function excluirHistorico(id) {
+            const tx = db.transaction("historico", "readwrite");
+            tx.objectStore("historico").delete(id);
+            tx.oncomplete = carregarHistorico;
+        }
 
-/* ABSTECIMENTO */
-const formAbastecimento=document.getElementById('formAbastecimento');
-const valorLitroEl=document.getElementById('valorLitro');
-const totalAbastecidoEl=document.getElementById('totalAbastecido');
-const tabelaAbastecimento=document.querySelector('#tabelaAbastecimento tbody');
+        /* ABASTECIMENTO */
+        const formAbastecimento = document.getElementById('formAbastecimento');
+        const valorLitroEl = document.getElementById('valorLitro');
+        const totalAbastecidoEl = document.getElementById('totalAbastecido');
+        const tabelaAbastecimento = document.querySelector('#tabelaAbastecimento tbody');
 
-function salvarAbastecimento(obj){
-  const tx=db.transaction("abastecimento","readwrite");
-  tx.objectStore("abastecimento").add(obj);
-  tx.oncomplete=carregarHistoricoAbastecimento;
-}
+        function salvarAbastecimento(obj) {
+            const tx = db.transaction("abastecimento", "readwrite");
+            tx.objectStore("abastecimento").add(obj);
+            tx.oncomplete = carregarHistoricoAbastecimento;
+        }
 
-formAbastecimento.addEventListener('submit',function(e){
-  e.preventDefault();
-  const valorLitro=parseFloat(valorLitroEl.value);
-  const total=parseFloat(totalAbastecidoEl.value);
-  if(!valorLitro||!total){alert("Preencha todos os campos!");return;}
-  const totalLitros=total/valorLitro;
-  salvarAbastecimento({valorLitro,totalLitros,total,data:new Date().toLocaleString()});
-  formAbastecimento.reset();
-});
+        formAbastecimento.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const valorLitro = parseFloat(valorLitroEl.value);
+            const total = parseFloat(totalAbastecidoEl.value);
+            if (!valorLitro || !total) { alert("Preencha todos os campos!"); return; }
+            const totalLitros = total / valorLitro;
+            salvarAbastecimento({ valorLitro, totalLitros: Number(totalLitros.toFixed(2)), total, data: new Date().toLocaleString() });
+            formAbastecimento.reset();
+        });
 
-document.getElementById('limparAbastecimento').addEventListener('click',()=>{formAbastecimento.reset();});
+        document.getElementById('limparAbastecimento').addEventListener('click', () => { formAbastecimento.reset(); });
 
-function carregarHistoricoAbastecimento(){
-  tabelaAbastecimento.innerHTML="";
-  const tx=db.transaction("abastecimento","readonly");
-  const store=tx.objectStore("abastecimento");
-  const req=store.getAll();
-  req.onsuccess=function(){
-    req.result.forEach((a,index)=>{
-      const tr=document.createElement('tr');
-      tr.innerHTML=`
-        <td>${index+1}</td>
+        function carregarHistoricoAbastecimento() {
+            tabelaAbastecimento.innerHTML = "";
+            const tx = db.transaction("abastecimento", "readonly");
+            const store = tx.objectStore("abastecimento");
+            const req = store.getAll();
+            req.onsuccess = function () {
+                let somaLitros = 0;
+                let somaReais = 0;
+
+                req.result.forEach((a, index) => {
+                    somaLitros += a.totalLitros;
+                    somaReais += a.total;
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+        <td>${index + 1}</td>
         <td>${a.data}</td>
-        <td>${a.valorLitro.toFixed(2)}</td>
+        <td>${formatBRL(a.valorLitro.toFixed(2))}</td>
         <td>${a.totalLitros.toFixed(2)}</td>
-        <td>${a.total.toFixed(2)}</td>
+        <td>${formatBRL(a.total.toFixed(2))}</td>
         <td><button onclick="excluirAbastecimento(${a.id})">Excluir</button></td>
       `;
-      tabelaAbastecimento.appendChild(tr);
-    });
-  }
-}
+                    tabelaAbastecimento.appendChild(tr);
+                });
 
-function excluirAbastecimento(id){
-  const tx=db.transaction("abastecimento","readwrite");
-  tx.objectStore("abastecimento").delete(id);
-  tx.oncomplete=carregarHistoricoAbastecimento;
-}
+                // atualizar totais
+                document.getElementById('somaLitros').textContent = somaLitros.toFixed(2);
+                document.getElementById('somaReais').textContent = formatBRL(somaReais.toFixed(2));
 
-/* EXPORT / IMPORT JSON */
-document.getElementById('exportar').addEventListener('click',()=>{
-  const tx1=db.transaction("historico","readonly");
-  const tx2=db.transaction("abastecimento","readonly");
-  const store1=tx1.objectStore("historico");
-  const store2=tx2.objectStore("abastecimento");
-  const req1=store1.getAll();
-  const req2=store2.getAll();
-  req1.onsuccess=function(){
-    req2.onsuccess=function(){
-      const data={viagens:req1.result,abastecimentos:req2.result};
-      const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
-      const url=URL.createObjectURL(blob);
-      const a=document.createElement("a");
-      a.href=url;
-      a.download="dados_combustivel.json";
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  }
-});
+                // média do litro
+                let media = somaLitros > 0 ? (somaReais / somaLitros) : 0;
+                document.getElementById('mediaLitro').textContent = formatBRL(media.toFixed(2));
+            }
+        }
 
-const importarBtn=document.getElementById('importar');
-const fileInput=document.getElementById('fileInput');
-importarBtn.addEventListener('click',()=>fileInput.click());
-fileInput.addEventListener('change',function(e){
-  const file=e.target.files[0];
-  if(!file) return;
-  const reader=new FileReader();
-  reader.onload=function(event){
-    try{
-      const data=JSON.parse(event.target.result);
-      if(data.viagens && data.abastecimentos){
-        const tx1=db.transaction("historico","readwrite");
-        const tx2=db.transaction("abastecimento","readwrite");
-        const store1=tx1.objectStore("historico");
-        const store2=tx2.objectStore("abastecimento");
-        data.viagens.forEach(item=>{delete item.id; store1.add(item);});
-        data.abastecimentos.forEach(item=>{delete item.id; store2.add(item);});
-        tx1.oncomplete=carregarHistorico;
-        tx2.oncomplete=carregarHistoricoAbastecimento;
-      }else{alert("Arquivo inválido!");}
-    }catch(err){alert("Erro ao importar JSON!");}
-  };
-  reader.readAsText(file);
-});
-</script>
+        function excluirAbastecimento(id) {
+            const tx = db.transaction("abastecimento", "readwrite");
+            tx.objectStore("abastecimento").delete(id);
+            tx.oncomplete = carregarHistoricoAbastecimento;
+        }
+
+        /* EXPORT / IMPORT JSON */
+        document.getElementById('exportar').addEventListener('click', () => {
+            const tx1 = db.transaction("historico", "readonly");
+            const tx2 = db.transaction("abastecimento", "readonly");
+            const store1 = tx1.objectStore("historico");
+            const store2 = tx2.objectStore("abastecimento");
+            const req1 = store1.getAll();
+            const req2 = store2.getAll();
+            req1.onsuccess = function () {
+                req2.onsuccess = function () {
+                    const data = { viagens: req1.result, abastecimentos: req2.result };
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "dados_combustivel.json";
+                    a.click();
+                    URL.revokeObjectURL(url);
+                }
+            }
+        });
+
+        const importarBtn = document.getElementById('importar');
+        const fileInput = document.getElementById('fileInput');
+        importarBtn.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                try {
+                    const data = JSON.parse(event.target.result);
+                    if (data.viagens && data.abastecimentos) {
+                        const tx1 = db.transaction("historico", "readwrite");
+                        const tx2 = db.transaction("abastecimento", "readwrite");
+                        const store1 = tx1.objectStore("historico");
+                        const store2 = tx2.objectStore("abastecimento");
+                        data.viagens.forEach(item => { delete item.id; store1.add(item); });
+                        data.abastecimentos.forEach(item => { delete item.id; store2.add(item); });
+                        tx1.oncomplete = carregarHistorico;
+                        tx2.oncomplete = carregarHistoricoAbastecimento;
+                    } else { alert("Arquivo inválido!"); }
+                } catch (err) { alert("Erro ao importar JSON!"); }
+            };
+            reader.readAsText(file);
+        });
+    </script>
 </body>
+
 </html>
